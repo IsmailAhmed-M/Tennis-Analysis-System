@@ -13,7 +13,7 @@ import pickle
 from copy import deepcopy
 import os
 
-def run_pipeline(input_video_path, output_video_path='output_videos/test.avi'):
+def run_pipeline(input_video_path, output_video_path='output_videos/output_video.avi'):
 
     # Reading the video 
     video_frames, original_fps = read_video(input_video_path)
@@ -22,8 +22,8 @@ def run_pipeline(input_video_path, output_video_path='output_videos/test.avi'):
     player_tracker = PlayerTracker(model_path='yolov8x') 
     ball_tracker = BallTracker(model_path='models/yolo5_last.pt')
 
-    player_detections = player_tracker.detect_frames(video_frames, read_from_stub = True , stub_path='tracker_stubs/player_detections.pkl')
-    ball_detections = ball_tracker.detect_frames(video_frames, read_from_stub = True , stub_path='tracker_stubs/ball_detections.pkl')
+    player_detections = player_tracker.detect_frames(video_frames, read_from_stub = True, stub_path='tracker_stubs/player_detections.pkl')
+    ball_detections = ball_tracker.detect_frames(video_frames, read_from_stub = True, stub_path='tracker_stubs/ball_detections.pkl')
     ball_detections = ball_tracker.interpolate_ball_positions(ball_detections)
 
         # Detecting court lines

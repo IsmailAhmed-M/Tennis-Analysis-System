@@ -15,25 +15,29 @@ from the_utils import (convert_meters_to_pixel_distance,
 class MiniCourt():
 
     def __init__(self, frame):
+        # Define the dimensions and padding for the mini court rectangle
         self.drawing_rectangle_width = 200
         self.drawing_rectangle_height = 390
         self.buffer = 25
         self.padding_court = 20
 
+        # Set up initial canvas and court positions
         self.set_canvas_background_box_position(frame)
         self.set_mini_court_position()
         self.set_court_drawing_keypoints()
         self.set_court_lines()
 
+    # Convert real-world meters to pixel distance on the mini court
     def convert_meters_to_pixels(self, meters):
         return convert_meters_to_pixel_distance(meters,
                                                 constants.DOUBLE_LINE_WIDTH,
                                                 self.court_drawing_width)
-
+    
+    # Set positions of 28 key points used to draw court lines
     def set_court_drawing_keypoints(self):
         drawing_keypoints = [0]*28
 
-        # points for the court
+        # Court corners and lines (based on real-world measurements and pixel conversions)
         # point 0
         drawing_keypoints[0] , drawing_keypoints[1] = int(self.court_start_x), int(self.court_start_y)
         # point 1
@@ -43,7 +47,8 @@ class MiniCourt():
         drawing_keypoints[5] = self.court_start_y + self.convert_meters_to_pixels(constants.HALF_COURT_LINE_HEIGHT*2)
         # point 3
         drawing_keypoints[6] = drawing_keypoints[0] + self.court_drawing_width
-        drawing_keypoints[7] = drawing_keypoints[5] 
+        drawing_keypoints[7] = drawing_keypoints[5]
+        # Double alleys
         # #point 4
         drawing_keypoints[8] = drawing_keypoints[0] +  self.convert_meters_to_pixels(constants.DOUBLE_ALLY_DIFFERENCE)
         drawing_keypoints[9] = drawing_keypoints[1]  
@@ -77,6 +82,7 @@ class MiniCourt():
 
         self.drawing_key_points=drawing_keypoints
 
+    # Define line connections between keypoints
     def set_court_lines(self):
         self.lines = [
             (0, 2),
@@ -91,6 +97,7 @@ class MiniCourt():
             (2,3)
         ]
 
+    # Set the inner mini court area (after padding)
     def set_mini_court_position(self):
         self.court_start_x = self.start_x + self.padding_court
         self.court_start_y = self.start_y + self.padding_court
@@ -98,6 +105,7 @@ class MiniCourt():
         self.court_end_y = self.end_y - self.padding_court
         self.court_drawing_width = self.court_end_x - self.court_start_x
         
+    # Determine the rectangle position for the mini court on the canvas        
     def set_canvas_background_box_position(self, frame):
         frame = frame.copy()
 
@@ -106,7 +114,7 @@ class MiniCourt():
         self.start_x = self.buffer
         self.start_y = self.end_y - self.drawing_rectangle_height
 
-
+    # Draw court lines and keypoints on a frame
     def draw_court(self,frame):
         for i in range(0, len(self.drawing_key_points),2):
             x = int(self.drawing_key_points[i])
@@ -137,6 +145,7 @@ class MiniCourt():
 
         return out
     
+    # Draw full mini court on a sequence of frames
     def draw_mini_court(self,frames):
         output_frames = []
         for frame in frames:
@@ -156,7 +165,7 @@ class MiniCourt():
     
     def get_mini_court_coordinates(self, object_position, closest_key_point, closest_key_point_index, player_height_in_pixels, player_height_in_meters):
 
-
+        # Calculate pixel distances
         distance_from_keypoint_x_pixels, distance_from_keypoint_y_pixels = measure_xy_distance(object_position, closest_key_point)
 
         # convert pixel distance to meters
@@ -168,8 +177,7 @@ class MiniCourt():
                                                                                 player_height_in_meters,
                                                                                 player_height_in_pixels)
         
-        # Convert to mini court coordinates
-
+        # Convert meters to pixels on the mini court
         mini_court_x_distance_pixels = self.convert_meters_to_pixels(distance_from_keypoint_x_meters)
         mini_court_y_distance_pixels = self.convert_meters_to_pixels(distance_from_keypoint_y_meters)
         closest_mini_coourt_keypoint = (self.drawing_key_points[closest_key_point_index*2],
@@ -231,7 +239,7 @@ class MiniCourt():
 
         return output_player_boxes, output_ball_boxes
     
-
+    # Draw given positions (player/ball) as circles on the mini court
     def draw_points_on_mini_court(self,frames,postions, color=(0,255,0)):
         for frame_num, frame in enumerate(frames):
             for _, position in postions[frame_num].items():

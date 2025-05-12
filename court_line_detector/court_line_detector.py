@@ -5,9 +5,11 @@ from torchvision import models
 import numpy as np
 
 class CourtLineDetector:
+    # Load a pre-trained ResNet-50 model
     def __init__(self, model_path):
         self.model = models.resnet50(pretrained=True)
-        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 14*2) 
+        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 14*2)
+        # Load custom-trained weights for the modified model
         self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
@@ -17,12 +19,12 @@ class CourtLineDetector:
         ])
 
     def predict(self, image):
-
-    
+        # Convert BGR (OpenCV format) to RGB
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image_tensor = self.transform(image_rgb).unsqueeze(0)
         with torch.no_grad():
             outputs = self.model(image_tensor)
+        # Convert the model output to a NumPy array of keypoints
         keypoints = outputs.squeeze().cpu().numpy()
         original_h, original_w = image.shape[:2]
         keypoints[::2] *= original_w / 224.0
@@ -35,11 +37,14 @@ class CourtLineDetector:
         for i in range(0, len(keypoints), 2):
             x = int(keypoints[i])
             y = int(keypoints[i+1])
+            # Label the keypoint index
             cv2.putText(image, str(i//2), (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 3)
-            cv2.circle(image, (x, y), 5, (0, 0, 255), -1)
+            # Draw a red circle at the keypoint location
+            cv2.circle(image, (x, y), 7, (0, 0, 255), -1)
         return image
     
     def draw_keypoints_on_video(self, video_frames, keypoints):
+        # Apply the same keypoints to each frame in the video (assumes static keypoints)
         output_video_frames = []
         for frame in video_frames:
             frame = self.draw_keypoints(frame, keypoints)

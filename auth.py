@@ -22,4 +22,4 @@ def signup_ui():
             add_user(username, password)
             st.success("Account created! You can now log in.")
         except:
-            st.error("Username already exists.")
+            st.error("Username already exists.")
